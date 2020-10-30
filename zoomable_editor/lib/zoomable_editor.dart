@@ -1,7 +1,4 @@
 library zoomable_editor;
 
-/// A Calculator.
-class Calculator {
-  /// Returns [value] plus 1.
-  int addOne(int value) => value + 1;
-}
+export 'src/zoomable_editor.dart';
+export 'src/zoomable_container.dart';

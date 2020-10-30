@@ -75,3 +75,7 @@ flutter:
   #
   # For details regarding fonts from package dependencies,
   # see https://flutter.dev/custom-fonts/#from-packages
+
+
+  assets:
+    - resource/kate-hliznitsova-lU_UuQ-6OVI-unsplash.jpg

@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:zoomable_editor_example/editor_example.dart';
+import 'package:zoomable_editor_example/sample_image_1.dart';
+import 'package:zoomable_editor_example/sample_image_2.dart';
 
 void main() {
   runApp(MyApp());
@@ -67,6 +70,9 @@ class _MyHomePageState extends State<MyHomePage> {
     // The Flutter framework has been optimized to make rerunning build methods
     // fast, so that you can just rebuild anything that needs updating rather
     // than having to individually change instances of widgets.
+
+
+
     return Scaffold(
       appBar: AppBar(
         // Here we take the value from the MyHomePage object that was created by
@@ -94,6 +100,24 @@ class _MyHomePageState extends State<MyHomePage> {
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
             MaterialButton(
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => SampleImage1()),
+                );
+              },
+              child: Text('Sample Transform 1', style: TextStyle(fontSize: 18, color: Colors.lightBlueAccent),),
+            ),
+            MaterialButton(
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => SampleImage2()),
+                );
+              },
+              child: Text('Sample Transform 2', style: TextStyle(fontSize: 18, color: Colors.lightBlueAccent),),
+            ),
+            MaterialButton(
               onPressed: (){
 print('Zoomable Text');
               },
@@ -101,10 +125,12 @@ print('Zoomable Text');
               'Zoomable Text',
               style: TextStyle(fontSize: 24, color: Colors.lightBlue),
             ),),
-            Container(height: 40,),
             MaterialButton(
                 onPressed: () {
-print('Zoomable Image');
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => EditorExample()),
+                  );
                 },
                 child: Text(
                   'Zoomable Image',
