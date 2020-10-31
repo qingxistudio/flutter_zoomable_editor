@@ -15,7 +15,7 @@ class ZoomableEditor extends StatefulWidget {
         @required this.contentHeight,
         this.displayWHRatio,
         this.contentInsets,
-      });
+      }): assert(editorWidth != null), assert(editorHeight != null), assert(contentWidth != null), assert(contentHeight != null);
 
   final Widget child;
   final double editorWidth;
@@ -43,12 +43,16 @@ class _ZoomableEditorState extends State<ZoomableEditor> {
 
   /// Display Size : 400 * 400,
   /// Content Size : 800 * 1000, Fit Size: 400 * 500
-  /// [initialAllowOffsetInEditor] will be Offset(0, 100)
-  /// Allow from Offset(0, -100) to Offset(0, 100)
-  Offset initialAllowOffsetInEditor;
-
+  /// [allowOffsetInContentWithScale] will be Offset(0, 50)
+  /// Allow from Offset(0, -50) to Offset(0, 100)
   Offset allowOffsetInContentWithScale() {
-    return initialAllowOffsetInEditor / _contentDisplayScale / widget.zoomableController.scale;
+
+    final contentDisplaySize = editorContentFitDisplaySize();
+    print('_contentDisplayScale $_contentDisplayScale contentDisplaySize $contentDisplaySize');
+    final curScale = widget.zoomableController.scale;
+    final allowOffsetX = (widget.contentWidth * curScale - contentDisplaySize.width / _contentDisplayScale) / 2;
+    final allowOffsetY = (widget.contentHeight * curScale - contentDisplaySize.height / _contentDisplayScale) / 2;
+    return Offset(allowOffsetX, allowOffsetY);
   }
 
   @override
@@ -65,7 +69,6 @@ class _ZoomableEditorState extends State<ZoomableEditor> {
 
   void _onScaleUpdate(ScaleUpdateDetails details) {
     final offsetDelta = -(details.focalPoint - _startGlobalFocalPoint);
-
     final newScale = _startScale * details.scale;
     final newOffset = _startOffset + offsetDelta / widget.zoomableController.scale / _contentDisplayScale;
     widget.zoomableController.updateScale(newScale);
@@ -73,45 +76,43 @@ class _ZoomableEditorState extends State<ZoomableEditor> {
   }
 
   void _onScaleEnd(ScaleEndDetails details) {
-
+    final fromTransform = widget.zoomableController.transformMatrix;
+    final newScale = widget.zoomableController.scale.clamp(widget.zoomableController.minScale, widget.zoomableController.maxScale).toDouble();
+    /// limit scale to avoid out of bound
+    widget.zoomableController.updateScale(newScale, notify: false);
 
     final curOffset = widget.zoomableController.offset;
-    final allowOffset = allowOffsetInContentWithScale();
-    final dx = curOffset.dx.clamp(-allowOffset.dx.abs(), allowOffset.dx.abs()).toDouble();
-    final dy = curOffset.dy.clamp(-allowOffset.dy.abs(), allowOffset.dy.abs()).toDouble();
-    final fromTransform = widget.zoomableController.transformMatrix;
+    final allowOffset = allowOffsetInContentWithScale() / newScale;
+    print('allowOffset: $allowOffset, curOffset $curOffset');
+    final dx = (curOffset.dx).clamp(-allowOffset.dx.abs(), allowOffset.dx.abs()).toDouble();
+    final dy = (curOffset.dy).clamp(-allowOffset.dy.abs(), allowOffset.dy.abs()).toDouble();
     /// limit offset to avoid out of bound
-    final newScale = widget.zoomableController.scale.clamp(widget.zoomableController.minScale, widget.zoomableController.maxScale).toDouble();
-    widget.zoomableController.updateScale(newScale);
     widget.zoomableController.updateOffset(Offset(dx, dy), notify: false);
     widget.zoomableController.notifyChange(animated: true, fromTransfrom: fromTransform);
   }
 
   Size editorContentFitDisplaySize() {
-    const showEdgeFactor = 0.8;
     final editorWHRatio = widget.editorWidth / widget.editorHeight;
     final contentOriginWHRatio = widget.contentWidth / widget.contentHeight;
     final contentDisplayWHRatio = widget.displayWHRatio ?? contentOriginWHRatio;
     Size displaySize;
-
-    if (editorWHRatio > contentDisplayWHRatio) {
-      final h = widget.editorHeight * showEdgeFactor;
-      displaySize = Size(h * contentDisplayWHRatio, h);
+    if (widget.contentInsets != null) {
+      displaySize = Size(widget.editorWidth - widget.contentInsets.horizontal, widget.editorHeight - widget.contentInsets.vertical);
     } else {
-      final w = widget.editorWidth * showEdgeFactor;
-      displaySize = Size(w, w / contentDisplayWHRatio);
+      const showEdgeFactor = 0.8;
+      if (editorWHRatio > contentDisplayWHRatio) {
+        final h = widget.editorHeight * showEdgeFactor;
+        displaySize = Size(h * contentDisplayWHRatio, h);
+      } else {
+        final w = widget.editorWidth * showEdgeFactor;
+        displaySize = Size(w, w / contentDisplayWHRatio);
+      }
     }
     final scaleFactor = widget.zoomableController.scale;
-    final offsetWBase = (scaleFactor - 1) * displaySize.width;
-    final offsetHBase = (scaleFactor - 1) * displaySize.height;
     if (contentDisplayWHRatio > contentOriginWHRatio) {
       _contentDisplayScale =  displaySize.width / widget.contentWidth;
-      final overflowOffsetH = widget.contentHeight * _contentDisplayScale - displaySize.height;
-      initialAllowOffsetInEditor = Offset(offsetWBase, overflowOffsetH * 2 + offsetHBase) / 2;
     } else {
       _contentDisplayScale =  displaySize.height / widget.contentHeight;
-      final overflowOffsetW = widget.contentWidth * _contentDisplayScale - displaySize.width;
-      initialAllowOffsetInEditor = Offset(overflowOffsetW * 2 + offsetWBase, offsetHBase) / 2;
     }
     return displaySize;
   }

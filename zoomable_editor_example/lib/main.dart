@@ -3,6 +3,8 @@ import 'package:zoomable_editor_example/editor_example.dart';
 import 'package:zoomable_editor_example/sample_image_1.dart';
 import 'package:zoomable_editor_example/sample_image_2.dart';
 
+import 'editor_limit_example.dart';
+
 void main() {
   runApp(MyApp());
 }
@@ -127,6 +129,17 @@ class _MyHomePageState extends State<MyHomePage> {
                 },
                 child: const Text(
                   'Zoomable Image',
+                  style: TextStyle(fontSize: 24, color: Colors.white),
+                )),
+            ElevatedButton(
+                onPressed: () {
+                  Navigator.push<EditorLimitExample>(
+                    context,
+                    MaterialPageRoute(builder: (context) => EditorLimitExample()),
+                  );
+                },
+                child: const Text(
+                  'Limited Offset And Scale',
                   style: TextStyle(fontSize: 24, color: Colors.white),
                 )),
           ],
