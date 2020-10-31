@@ -7,7 +7,7 @@ import 'constants.dart';
 class EditorExample extends StatelessWidget {
 
   AssetImage createAssetImage() {
-    final assetImage = AssetImage("resource/kate-hliznitsova-lU_UuQ-6OVI-unsplash.jpg");
+    const assetImage = AssetImage('resource/kate-hliznitsova-lU_UuQ-6OVI-unsplash.jpg');
     return assetImage;
   }
 
@@ -39,7 +39,7 @@ class EditorExample extends StatelessWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text("Editor"),
+        title: const Text('Editor'),
       ),
       body: Center(
         child: Column(
@@ -48,12 +48,13 @@ class EditorExample extends StatelessWidget {
             Center(
               child: editor,
             ),
+            Container(height: 50, width: 10,),
             Center(
               child: ElevatedButton(
                 onPressed: () {
                   Navigator.pop(context);
                 },
-                child: Text('Finish'),
+                child: const Text('Finish'),
               ),
             ),
           ],

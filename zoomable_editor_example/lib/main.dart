@@ -98,43 +98,36 @@ class _MyHomePageState extends State<MyHomePage> {
           // axis because Columns are vertical (the cross axis would be
           // horizontal).
           mainAxisAlignment: MainAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: <Widget>[
-            MaterialButton(
+            ElevatedButton(
               onPressed: () {
                 Navigator.push<SampleImage1>(
                   context,
                   MaterialPageRoute(builder: (context) => SampleImage1()),
                 );
               },
-              child: Text('Sample Transform 1', style: TextStyle(fontSize: 18, color: Colors.lightBlueAccent),),
+              child: const Text('Sample 1', style: TextStyle(fontSize: 18, color: Colors.white),),
             ),
-            MaterialButton(
+            ElevatedButton(
               onPressed: () {
                 Navigator.push<SampleImage2>(
                   context,
                   MaterialPageRoute(builder: (context) => SampleImage2()),
                 );
               },
-              child: Text('Sample Transform 2', style: TextStyle(fontSize: 18, color: Colors.lightBlueAccent),),
+              child: const Text('Sample 2', style: TextStyle(fontSize: 18, color: Colors.white),),
             ),
-            MaterialButton(
-              onPressed: (){
-print('Zoomable Text');
-              },
-              child: Text(
-              'Zoomable Text',
-              style: TextStyle(fontSize: 24, color: Colors.lightBlue),
-            ),),
-            MaterialButton(
+            ElevatedButton(
                 onPressed: () {
                   Navigator.push<EditorExample>(
                     context,
                     MaterialPageRoute(builder: (context) => EditorExample()),
                   );
                 },
-                child: Text(
+                child: const Text(
                   'Zoomable Image',
-                  style: TextStyle(fontSize: 24, color: Colors.lightBlue),
+                  style: TextStyle(fontSize: 24, color: Colors.white),
                 )),
           ],
         ),

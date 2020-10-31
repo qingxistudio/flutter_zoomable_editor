@@ -66,7 +66,7 @@ class _ZoomableEditorState extends State<ZoomableEditor> {
   void _onScaleUpdate(ScaleUpdateDetails details) {
     final offsetDelta = -(details.focalPoint - _startGlobalFocalPoint);
 
-    final newScale = (_startScale * details.scale).clamp(widget.zoomableController.minScale, widget.zoomableController.maxScale).toDouble();
+    final newScale = _startScale * details.scale;
     final newOffset = _startOffset + offsetDelta / widget.zoomableController.scale / _contentDisplayScale;
     widget.zoomableController.updateScale(newScale);
     widget.zoomableController.updateOffset(newOffset);
@@ -74,12 +74,15 @@ class _ZoomableEditorState extends State<ZoomableEditor> {
 
   void _onScaleEnd(ScaleEndDetails details) {
 
+
     final curOffset = widget.zoomableController.offset;
     final allowOffset = allowOffsetInContentWithScale();
     final dx = curOffset.dx.clamp(-allowOffset.dx.abs(), allowOffset.dx.abs()).toDouble();
     final dy = curOffset.dy.clamp(-allowOffset.dy.abs(), allowOffset.dy.abs()).toDouble();
     final fromTransform = widget.zoomableController.transformMatrix;
     /// limit offset to avoid out of bound
+    final newScale = widget.zoomableController.scale.clamp(widget.zoomableController.minScale, widget.zoomableController.maxScale).toDouble();
+    widget.zoomableController.updateScale(newScale);
     widget.zoomableController.updateOffset(Offset(dx, dy), notify: false);
     widget.zoomableController.notifyChange(animated: true, fromTransfrom: fromTransform);
   }
