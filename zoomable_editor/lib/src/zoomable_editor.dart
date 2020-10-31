@@ -48,10 +48,14 @@ class _ZoomableEditorState extends State<ZoomableEditor> {
   /// Allow from Offset(0, -100) to Offset(0, 100)
   Offset initialAllowOffsetInEditor;
 
+  Offset allowOffsetInContentWithScale() {
+    return initialAllowOffsetInEditor / _contentDisplayScale / widget.zoomableController.scale;
+  }
+
   @override
   void initState() {
     _transformationController = TransformationController();
-    _bouncingScrollPhysics = BouncingScrollPhysics();
+    _bouncingScrollPhysics = BouncingScrollPhysics(parent: AlwaysScrollableScrollPhysics());
     super.initState();
   }
 
@@ -74,8 +78,13 @@ class _ZoomableEditorState extends State<ZoomableEditor> {
   }
 
   void _onScaleEnd(ScaleEndDetails details) {
-    final list = ListView();
-    // Nothing to do.
+
+    final curOffset = widget.zoomableController.offset;
+    final allowOffset = allowOffsetInContentWithScale();
+    final dx = curOffset.dx.clamp(-allowOffset.dx.abs(), allowOffset.dx.abs());
+    final dy = curOffset.dy.clamp(-allowOffset.dy.abs(), allowOffset.dy.abs());
+    /// limit offset to avoid out of bound
+    widget.zoomableController.offset = Offset(dx, dy);
   }
 
   Size editorContentFitDisplaySize() {
@@ -92,12 +101,17 @@ class _ZoomableEditorState extends State<ZoomableEditor> {
       final w = widget.editorWidth * showEdgeFactor;
       displaySize = Size(w, w / contentDisplayWHRatio);
     }
+    final scaleFactor = widget.zoomableController.scale;
+    final offsetWBase = (scaleFactor - 1) * displaySize.width;
+    final offsetHBase = (scaleFactor - 1) * displaySize.height;
     if (contentDisplayWHRatio > contentOriginWHRatio) {
       _contentDisplayScale =  displaySize.width / widget.contentWidth;
-      initialAllowOffsetInEditor = Offset(0, widget.contentHeight * _contentDisplayScale - displaySize.height);
+      final overflowOffsetH = widget.contentHeight * _contentDisplayScale - displaySize.height;
+      initialAllowOffsetInEditor = Offset(offsetWBase, overflowOffsetH + offsetHBase) / 2;
     } else {
       _contentDisplayScale =  displaySize.height / widget.contentHeight;
-      initialAllowOffsetInEditor = Offset(widget.contentWidth * _contentDisplayScale - displaySize.width, 0);
+      final overflowOffsetW = widget.contentWidth * _contentDisplayScale - displaySize.width;
+      initialAllowOffsetInEditor = Offset(overflowOffsetW + offsetWBase, offsetHBase) / 2;
     }
     return displaySize;
   }
@@ -120,26 +134,25 @@ class _ZoomableEditorState extends State<ZoomableEditor> {
       child: child,
       foregroundDecoration: BoxDecoration(
         border: Border(
-            right: BorderSide(
-              width: edgeInsets.right,
-              color: maskColor,
-            ),
-            left: BorderSide(
-              width: edgeInsets.left,
-              color: maskColor,
-            ),
-            bottom: BorderSide(
-              width: edgeInsets.bottom,
-              color: maskColor,
-            ),
-            top: BorderSide(
-              width: edgeInsets.top,
-              color: maskColor,
-            ),
+          right: BorderSide(
+            width: edgeInsets.right,
+            color: maskColor,
           ),
+          left: BorderSide(
+            width: edgeInsets.left,
+            color: maskColor,
+          ),
+          bottom: BorderSide(
+            width: edgeInsets.bottom,
+            color: maskColor,
+          ),
+          top: BorderSide(
+            width: edgeInsets.top,
+            color: maskColor,
+          ),
+        ),
       ),
     );
-
   }
 
   @override
@@ -151,29 +164,29 @@ class _ZoomableEditorState extends State<ZoomableEditor> {
     final editorCanvasWidget = createEdgeMaskWithChild(child: Container(
       clipBehavior: Clip.antiAlias,
       decoration: BoxDecoration(
-                  border: Border.all(color: Colors.transparent, width: 0)
-              ),
+          border: Border.all(color: Colors.transparent, width: 0)
+      ),
       width: widget.editorWidth,
       height: widget.editorHeight,
       child: Container(
-        padding: insets,
-        child: _ZoomableContainerBuilder(
-                        widget.child,
-                        widget.zoomableController,
-                        contentWidth: widget.contentWidth,
-                        contentHeight: widget.contentHeight,
-                        displayWidth: contentDisplaySize.width,
-                        displayHeight: contentDisplaySize.height,
-                      )
+          padding: insets,
+          child: _ZoomableContainerBuilder(
+            widget.child,
+            widget.zoomableController,
+            contentWidth: widget.contentWidth,
+            contentHeight: widget.contentHeight,
+            displayWidth: contentDisplaySize.width,
+            displayHeight: contentDisplaySize.height,
+          )
       ),
     ));
 
     return GestureDetector(
-        onScaleStart: _onScaleStart,
-        onScaleUpdate: _onScaleUpdate,
-        onScaleEnd: _onScaleEnd,
-        child: editorCanvasWidget,
-      );
+      onScaleStart: _onScaleStart,
+      onScaleUpdate: _onScaleUpdate,
+      onScaleEnd: _onScaleEnd,
+      child: editorCanvasWidget,
+    );
   }
 }
 

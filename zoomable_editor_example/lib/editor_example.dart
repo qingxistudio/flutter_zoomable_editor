@@ -26,7 +26,7 @@ class EditorExample extends StatelessWidget {
         minScale: 1,
         maxScale: 3
     );
-    zoomableController.scale = 1;
+    zoomableController.scale = 2;
     final editor = ZoomableEditor(
         imgContent,
         zoomableController,
