@@ -101,7 +101,7 @@ class _MyHomePageState extends State<MyHomePage> {
           children: <Widget>[
             MaterialButton(
               onPressed: () {
-                Navigator.push(
+                Navigator.push<SampleImage1>(
                   context,
                   MaterialPageRoute(builder: (context) => SampleImage1()),
                 );
@@ -110,7 +110,7 @@ class _MyHomePageState extends State<MyHomePage> {
             ),
             MaterialButton(
               onPressed: () {
-                Navigator.push(
+                Navigator.push<SampleImage2>(
                   context,
                   MaterialPageRoute(builder: (context) => SampleImage2()),
                 );
@@ -127,7 +127,7 @@ print('Zoomable Text');
             ),),
             MaterialButton(
                 onPressed: () {
-                  Navigator.push(
+                  Navigator.push<EditorExample>(
                     context,
                     MaterialPageRoute(builder: (context) => EditorExample()),
                   );

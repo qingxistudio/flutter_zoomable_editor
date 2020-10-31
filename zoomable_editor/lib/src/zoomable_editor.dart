@@ -34,13 +34,12 @@ class ZoomableEditor extends StatefulWidget {
 
 class _ZoomableEditorState extends State<ZoomableEditor> {
 
-  TransformationController _transformationController;
   Offset _startGlobalFocalPoint;
   Offset _startOffset;
   double _startScale;
 
   double _contentDisplayScale;
-  BouncingScrollPhysics _bouncingScrollPhysics;
+  // BouncingScrollPhysics _bouncingScrollPhysics;
 
   /// Display Size : 400 * 400,
   /// Content Size : 800 * 1000, Fit Size: 400 * 500
@@ -54,8 +53,7 @@ class _ZoomableEditorState extends State<ZoomableEditor> {
 
   @override
   void initState() {
-    _transformationController = TransformationController();
-    _bouncingScrollPhysics = BouncingScrollPhysics(parent: AlwaysScrollableScrollPhysics());
+    // _bouncingScrollPhysics = BouncingScrollPhysics(parent: AlwaysScrollableScrollPhysics());
     super.initState();
   }
 
@@ -63,28 +61,27 @@ class _ZoomableEditorState extends State<ZoomableEditor> {
     _startGlobalFocalPoint = details.focalPoint;
     _startOffset = widget.zoomableController.offset;
     _startScale = widget.zoomableController.scale;
-
-    print('$_startGlobalFocalPoint,$_startOffset,$_startScale');
   }
 
   void _onScaleUpdate(ScaleUpdateDetails details) {
     final offsetDelta = -(details.focalPoint - _startGlobalFocalPoint);
-    print('$offsetDelta,${widget.zoomableController.scale},${widget.zoomableController.offset}');
 
-    widget.zoomableController.scale = (_startScale * details.scale).clamp(widget.zoomableController.minScale, widget.zoomableController.maxScale);
-    widget.zoomableController.offset = _startOffset + offsetDelta / widget.zoomableController.scale / _contentDisplayScale;
-
-    print('after ${widget.zoomableController.scale},${widget.zoomableController.offset}');
+    final newScale = (_startScale * details.scale).clamp(widget.zoomableController.minScale, widget.zoomableController.maxScale).toDouble();
+    final newOffset = _startOffset + offsetDelta / widget.zoomableController.scale / _contentDisplayScale;
+    widget.zoomableController.updateScale(newScale);
+    widget.zoomableController.updateOffset(newOffset);
   }
 
   void _onScaleEnd(ScaleEndDetails details) {
 
     final curOffset = widget.zoomableController.offset;
     final allowOffset = allowOffsetInContentWithScale();
-    final dx = curOffset.dx.clamp(-allowOffset.dx.abs(), allowOffset.dx.abs());
-    final dy = curOffset.dy.clamp(-allowOffset.dy.abs(), allowOffset.dy.abs());
+    final dx = curOffset.dx.clamp(-allowOffset.dx.abs(), allowOffset.dx.abs()).toDouble();
+    final dy = curOffset.dy.clamp(-allowOffset.dy.abs(), allowOffset.dy.abs()).toDouble();
+    final fromTransform = widget.zoomableController.transformMatrix;
     /// limit offset to avoid out of bound
-    widget.zoomableController.offset = Offset(dx, dy);
+    widget.zoomableController.updateOffset(Offset(dx, dy), notify: false);
+    widget.zoomableController.notifyChange(animated: true, fromTransfrom: fromTransform);
   }
 
   Size editorContentFitDisplaySize() {
@@ -107,11 +104,11 @@ class _ZoomableEditorState extends State<ZoomableEditor> {
     if (contentDisplayWHRatio > contentOriginWHRatio) {
       _contentDisplayScale =  displaySize.width / widget.contentWidth;
       final overflowOffsetH = widget.contentHeight * _contentDisplayScale - displaySize.height;
-      initialAllowOffsetInEditor = Offset(offsetWBase, overflowOffsetH + offsetHBase) / 2;
+      initialAllowOffsetInEditor = Offset(offsetWBase, overflowOffsetH * 2 + offsetHBase) / 2;
     } else {
       _contentDisplayScale =  displaySize.height / widget.contentHeight;
       final overflowOffsetW = widget.contentWidth * _contentDisplayScale - displaySize.width;
-      initialAllowOffsetInEditor = Offset(overflowOffsetW + offsetWBase, offsetHBase) / 2;
+      initialAllowOffsetInEditor = Offset(overflowOffsetW * 2 + offsetWBase, offsetHBase) / 2;
     }
     return displaySize;
   }
@@ -222,10 +219,18 @@ class _ZoomableContainerBuilder extends StatefulWidget {
 
 class _ZoomableContainerBuilderState extends State<_ZoomableContainerBuilder> {
 
+  bool animated = false;
+  Matrix4 from;
+  Matrix4 to;
+
   @override
   void initState() {
-    widget.zoomableController.onChanged = () {
-      setState(() {});
+    widget.zoomableController.onChanged = ({bool animated, Matrix4 from, Matrix4 to}) {
+      setState(() {
+        this.animated = animated;
+        this.from = from;
+        this.to = to;
+      });
     };
     super.initState();
   }
@@ -238,6 +243,7 @@ class _ZoomableContainerBuilderState extends State<_ZoomableContainerBuilder> {
       contentHeight: widget.contentHeight,
       displayWidth: widget.displayWidth,
       displayHeight: widget.displayHeight,
+      fromTransform: animated ? from : null,
       transform: widget.zoomableController.transformMatrix,
       clipToBounds: false,
     );
