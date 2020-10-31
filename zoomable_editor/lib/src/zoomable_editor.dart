@@ -40,10 +40,18 @@ class _ZoomableEditorState extends State<ZoomableEditor> {
   double _startScale;
 
   double _contentDisplayScale;
+  BouncingScrollPhysics _bouncingScrollPhysics;
+
+  /// Display Size : 400 * 400,
+  /// Content Size : 800 * 1000, Fit Size: 400 * 500
+  /// [initialAllowOffsetInEditor] will be Offset(0, 100)
+  /// Allow from Offset(0, -100) to Offset(0, 100)
+  Offset initialAllowOffsetInEditor;
 
   @override
   void initState() {
     _transformationController = TransformationController();
+    _bouncingScrollPhysics = BouncingScrollPhysics();
     super.initState();
   }
 
@@ -66,6 +74,7 @@ class _ZoomableEditorState extends State<ZoomableEditor> {
   }
 
   void _onScaleEnd(ScaleEndDetails details) {
+    final list = ListView();
     // Nothing to do.
   }
 
@@ -74,20 +83,23 @@ class _ZoomableEditorState extends State<ZoomableEditor> {
     final editorWHRatio = widget.editorWidth / widget.editorHeight;
     final contentOriginWHRatio = widget.contentWidth / widget.contentHeight;
     final contentDisplayWHRatio = widget.displayWHRatio ?? contentOriginWHRatio;
-    Size diplaySize;
+    Size displaySize;
+
     if (editorWHRatio > contentDisplayWHRatio) {
       final h = widget.editorHeight * showEdgeFactor;
-      diplaySize = Size(h * contentDisplayWHRatio, h);
+      displaySize = Size(h * contentDisplayWHRatio, h);
     } else {
       final w = widget.editorWidth * showEdgeFactor;
-      diplaySize = Size(w, w / contentDisplayWHRatio);
+      displaySize = Size(w, w / contentDisplayWHRatio);
     }
     if (contentDisplayWHRatio > contentOriginWHRatio) {
-      _contentDisplayScale =  diplaySize.width / widget.contentWidth;
+      _contentDisplayScale =  displaySize.width / widget.contentWidth;
+      initialAllowOffsetInEditor = Offset(0, widget.contentHeight * _contentDisplayScale - displaySize.height);
     } else {
-      _contentDisplayScale =  diplaySize.height / widget.contentHeight;
+      _contentDisplayScale =  displaySize.height / widget.contentHeight;
+      initialAllowOffsetInEditor = Offset(widget.contentWidth * _contentDisplayScale - displaySize.width, 0);
     }
-    return diplaySize;
+    return displaySize;
   }
 
   EdgeInsets editorEdgeInsets() {
