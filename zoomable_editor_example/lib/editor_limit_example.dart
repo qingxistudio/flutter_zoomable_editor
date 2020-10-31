@@ -1,16 +1,7 @@
-# zoomable_editor
+import 'package:flutter/material.dart';
+import 'package:zoomable_editor/zoomable_editor.dart';
 
-Zoomable editor to control child widget's position, scale, rotation
-
-
-![alt Sample Screenshot](https://raw.githubusercontent.com/qingxistudio/flutter_zoomable_editor/master/sample.jpg)
-
-
-## Getting Started
-
-Example
-
-```
+import 'constants.dart';
 
 
 class EditorLimitExample extends StatelessWidget {
@@ -78,12 +69,3 @@ class EditorLimitExample extends StatelessWidget {
     );
   }
 }
-
-
-```
-
-
-
-## Assets
-flutter_zoomable_editor/zoomable_editor_example/resource/kate-hliznitsova-lU_UuQ-6OVI-unsplash.jpg
-<span>Photo by <a href="https://unsplash.com/@kate_gliz?utm_source=unsplash&amp;utm_medium=referral&amp;utm_content=creditCopyText">Kate Hliznitsova</a> on <a href="https://unsplash.com/?utm_source=unsplash&amp;utm_medium=referral&amp;utm_content=creditCopyText">Unsplash</a></span>
