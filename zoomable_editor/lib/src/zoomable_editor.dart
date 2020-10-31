@@ -71,7 +71,7 @@ class _ZoomableEditorState extends State<ZoomableEditor> {
     final offsetDelta = -(details.focalPoint - _startGlobalFocalPoint);
     print('$offsetDelta,${widget.zoomableController.scale},${widget.zoomableController.offset}');
 
-    widget.zoomableController.scale = _startScale * details.scale;
+    widget.zoomableController.scale = (_startScale * details.scale).clamp(widget.zoomableController.minScale, widget.zoomableController.maxScale);
     widget.zoomableController.offset = _startOffset + offsetDelta / widget.zoomableController.scale / _contentDisplayScale;
 
     print('after ${widget.zoomableController.scale},${widget.zoomableController.offset}');
@@ -170,14 +170,19 @@ class _ZoomableEditorState extends State<ZoomableEditor> {
       height: widget.editorHeight,
       child: Container(
           padding: insets,
-          child: _ZoomableContainerBuilder(
-            widget.child,
-            widget.zoomableController,
-            contentWidth: widget.contentWidth,
-            contentHeight: widget.contentHeight,
-            displayWidth: contentDisplaySize.width,
-            displayHeight: contentDisplaySize.height,
-          )
+          child: Container(
+              foregroundDecoration: BoxDecoration(
+              border: Border.all(width: 2, color: Colors.white),
+              ),
+              child: _ZoomableContainerBuilder(
+                widget.child,
+                widget.zoomableController,
+                contentWidth: widget.contentWidth,
+                contentHeight: widget.contentHeight,
+                displayWidth: contentDisplaySize.width,
+                displayHeight: contentDisplaySize.height,
+              )
+            )
       ),
     ));
 
