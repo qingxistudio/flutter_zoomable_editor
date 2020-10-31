@@ -1,8 +1,8 @@
 name: zoomable_editor
 description: Zoomable editor to control child widget's position, scale, rotation
 version: 1.0.0
-author:
-homepage:
+homepage: https://github.com/qingxistudio/flutter_zoomable_editor
+repository: https://github.com/qingxistudio/flutter_zoomable_editor
 
 environment:
   sdk: ">=2.7.0 <3.0.0"
