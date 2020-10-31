@@ -20,7 +20,7 @@ class ZoomableController {
   set offset(Offset newOffset) {
     if (_offset != newOffset) {
       _offset = newOffset;
-      onChanged();
+      _notifyChange();
     }
   }
 
@@ -29,6 +29,12 @@ class ZoomableController {
   set scale(double newScale) {
     if (_scale != newScale) {
       _scale = newScale;
+      _notifyChange();
+    }
+  }
+
+  void _notifyChange() {
+    if (onChanged != null) {
       onChanged();
     }
   }

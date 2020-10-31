@@ -27,8 +27,8 @@ class SampleImage2 extends StatelessWidget {
           children: [
             Container(
               clipBehavior: Clip.antiAlias,
-              decoration: new BoxDecoration(
-                  border: new Border.all(color: Colors.transparent, width: 0)
+              decoration: BoxDecoration(
+                  border: Border.all(color: Colors.transparent, width: 0)
               ),
               width: 200,
               height: 200,
@@ -55,8 +55,8 @@ class SampleImage2 extends StatelessWidget {
             ),
             Container(
               clipBehavior: Clip.antiAlias,
-              decoration: new BoxDecoration(
-                  border: new Border.all(color: Colors.transparent, width: 0)
+              decoration: BoxDecoration(
+                  border: Border.all(color: Colors.transparent, width: 0)
               ),
               width: 200,
               height: 200,

@@ -13,6 +13,8 @@ class ZoomableEditor extends StatefulWidget {
         @required this.editorHeight,
         @required this.contentWidth,
         @required this.contentHeight,
+        this.displayWHRatio,
+        this.contentInsets,
       });
 
   final Widget child;
@@ -20,6 +22,8 @@ class ZoomableEditor extends StatefulWidget {
   final double editorHeight;
   final double contentWidth;
   final double contentHeight;
+  final double displayWHRatio;
+  final EdgeInsets contentInsets;
   final ZoomableController zoomableController;
 
   @override
@@ -35,145 +39,128 @@ class _ZoomableEditorState extends State<ZoomableEditor> {
   Offset _startOffset;
   double _startScale;
 
+  double _contentDisplayScale;
+
   @override
   void initState() {
-    _transformationController = TransformationController(widget.zoomableController.transformMatrix);
+    _transformationController = TransformationController();
     super.initState();
   }
 
-  void _onInteractionStart(ScaleStartDetails details) {
-    _startGlobalFocalPoint = details.localFocalPoint;
+  void _onScaleStart(ScaleStartDetails details) {
+    _startGlobalFocalPoint = details.focalPoint;
     _startOffset = widget.zoomableController.offset;
     _startScale = widget.zoomableController.scale;
 
     print('$_startGlobalFocalPoint,$_startOffset,$_startScale');
   }
 
-  void _onInteractionUpdate(ScaleUpdateDetails details) {
-    final offsetDelta = -(details.localFocalPoint - _startGlobalFocalPoint);
+  void _onScaleUpdate(ScaleUpdateDetails details) {
+    final offsetDelta = -(details.focalPoint - _startGlobalFocalPoint);
     print('$offsetDelta,${widget.zoomableController.scale},${widget.zoomableController.offset}');
 
     widget.zoomableController.scale = _startScale * details.scale;
-    widget.zoomableController.offset = _startOffset + offsetDelta * widget.zoomableController.scale;
+    widget.zoomableController.offset = _startOffset + offsetDelta / widget.zoomableController.scale / _contentDisplayScale;
 
     print('after ${widget.zoomableController.scale},${widget.zoomableController.offset}');
   }
 
-  void _onInteractionEnd(ScaleEndDetails details) {
+  void _onScaleEnd(ScaleEndDetails details) {
     // Nothing to do.
   }
 
   Size editorContentFitDisplaySize() {
-    const showEdgeFactor = 0.6;
-    final editorRatio = widget.editorWidth / widget.editorHeight;
-    final contentRatio = widget.contentWidth / widget.contentHeight;
-    if (editorRatio > contentRatio) {
+    const showEdgeFactor = 0.8;
+    final editorWHRatio = widget.editorWidth / widget.editorHeight;
+    final contentOriginWHRatio = widget.contentWidth / widget.contentHeight;
+    final contentDisplayWHRatio = widget.displayWHRatio ?? contentOriginWHRatio;
+    Size diplaySize;
+    if (editorWHRatio > contentDisplayWHRatio) {
       final h = widget.editorHeight * showEdgeFactor;
-      return Size(h * contentRatio, h);
+      diplaySize = Size(h * contentDisplayWHRatio, h);
     } else {
       final w = widget.editorWidth * showEdgeFactor;
-      return Size(w, w / contentRatio);
+      diplaySize = Size(w, w / contentDisplayWHRatio);
     }
+    if (contentDisplayWHRatio > contentOriginWHRatio) {
+      _contentDisplayScale =  diplaySize.width / widget.contentWidth;
+    } else {
+      _contentDisplayScale =  diplaySize.height / widget.contentHeight;
+    }
+    return diplaySize;
   }
 
-  Widget createEdgeMask() {
-        final topBottomMask = ShaderMask(
-        blendMode: BlendMode.dstIn,
-        shaderCallback: (bounds) {
-          final topStop = _insets.top/bounds.height;
-          final bottomStop = 1-_insets.bottom/bounds.height;
-          return LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            stops: [0,topStop,topStop,bottomStop,bottomStop,1],
-            colors: [maskColor, maskColor, transparentColor, transparentColor, maskColor, maskColor],
-          ).createShader(Rect.fromLTRB(_insets.left, 0, bounds.right-_insets.right, bounds.bottom));
-        },
-        child: stack,
-      );
+  EdgeInsets editorEdgeInsets() {
+    if (widget.contentInsets != null) {
+      return widget.contentInsets;
+    }
+    final size = editorContentFitDisplaySize();
+    final left = (widget.editorWidth - size.width) / 2;
+    final top = (widget.editorHeight - size.height) / 2;
+    final edgeInsets = EdgeInsets.fromLTRB(left, top, left, top);
+    return edgeInsets;
+  }
 
-    final maskContainer = ShaderMask(
-      blendMode: BlendMode.dstIn,
-      shaderCallback: (bounds) {
-          final leftStop = _insets.left/bounds.width;
-          final rightStop = 1-_insets.right/bounds.width;
-          return LinearGradient(
-            begin: Alignment.centerLeft,
-            end: Alignment.centerRight,
-            stops: [
-              0,
-              leftStop,
-              leftStop,
-              rightStop,
-              rightStop,
-              1],
-            colors: [maskColor, maskColor, transparentColor, transparentColor, maskColor, maskColor],
-          ).createShader(bounds);
-      },
-      child:topBottomMask
+  Widget createEdgeMaskWithChild({@required Widget child}) {
+    final edgeInsets = editorEdgeInsets();
+    final maskColor = Colors.white.withOpacity(0.4);
+    return Container(
+      child: child,
+      foregroundDecoration: BoxDecoration(
+        border: Border(
+            right: BorderSide(
+              width: edgeInsets.right,
+              color: maskColor,
+            ),
+            left: BorderSide(
+              width: edgeInsets.left,
+              color: maskColor,
+            ),
+            bottom: BorderSide(
+              width: edgeInsets.bottom,
+              color: maskColor,
+            ),
+            top: BorderSide(
+              width: edgeInsets.top,
+              color: maskColor,
+            ),
+          ),
+      ),
     );
 
-    return maskContainer;
   }
 
   @override
   Widget build(BuildContext context) {
 
-    final editorContentDisplaySize = editorContentFitDisplaySize();
+    final contentDisplaySize = editorContentFitDisplaySize();
+    final insets = editorEdgeInsets();
 
-    final interactiveViewer = InteractiveViewer(
-      child: Center(
-        child: Container(
-          color: Colors.red,
-          width: widget.contentWidth,
-          height: widget.contentHeight,
-        ),
-      ),
-      scaleEnabled: widget.zoomableController.scaleEnabled,
-      panEnabled: widget.zoomableController.transitionEnabled,
-      transformationController: _transformationController,
-      onInteractionStart: _onInteractionStart,
-      onInteractionUpdate: _onInteractionUpdate,
-      onInteractionEnd: _onInteractionEnd,
-      minScale: widget.zoomableController.minScale,
-      maxScale: widget.zoomableController.maxScale,
-    );
-
-    // return Container(color: Colors.amberAccent,);
-
-    return Card(
-        child: IntrinsicHeight(
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: <Widget>[
-              Container(
-                color: Colors.black87,
-                child: Stack(
-                  children: [
-                    Center(
-                      child: _ZoomableContainerBuilder(
+    final editorCanvasWidget = createEdgeMaskWithChild(child: Container(
+      clipBehavior: Clip.antiAlias,
+      decoration: BoxDecoration(
+                  border: Border.all(color: Colors.transparent, width: 0)
+              ),
+      width: widget.editorWidth,
+      height: widget.editorHeight,
+      child: Container(
+        padding: insets,
+        child: _ZoomableContainerBuilder(
                         widget.child,
                         widget.zoomableController,
                         contentWidth: widget.contentWidth,
                         contentHeight: widget.contentHeight,
-                        displayWidth: widget.targetWidth,
-                        displayHeight: widget.targetHeight,
-                      ),
-                    ),
-                    Positioned(
-                      left: 0,
-                      right: 0,
-                      top: 0,
-                      bottom: 0,
-                      child: interactiveViewer,
-                    )
-                  ],
-                )
-              ),
-              // Expanded(...)
-            ],
-          ),
-        )
+                        displayWidth: contentDisplaySize.width,
+                        displayHeight: contentDisplaySize.height,
+                      )
+      ),
+    ));
+
+    return GestureDetector(
+        onScaleStart: _onScaleStart,
+        onScaleUpdate: _onScaleUpdate,
+        onScaleEnd: _onScaleEnd,
+        child: editorCanvasWidget,
       );
   }
 }
@@ -222,7 +209,7 @@ class _ZoomableContainerBuilderState extends State<_ZoomableContainerBuilder> {
       displayWidth: widget.displayWidth,
       displayHeight: widget.displayHeight,
       transform: widget.zoomableController.transformMatrix,
-      clipToBounds: true,
+      clipToBounds: false,
     );
     return zoomContainer;
   }
