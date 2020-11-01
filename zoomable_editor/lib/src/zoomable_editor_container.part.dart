@@ -7,18 +7,17 @@ class _ZoomableContainerBuilder extends StatefulWidget {
       this.child,
       this.zoomableController,
       {
-        @required this.displayWidth,
-        @required this.displayHeight,
-        @required this.contentWidth,
-        @required this.contentHeight,
+        this.displaySize,
+        this.contentSize,
       });
 
+  /// [child] The content to show with transform
   final Widget child;
+  /// [displaySize] Size for the editor container
+  final Size displaySize;
+  /// [contentSize] Size of the content to scale and move
+  final Size contentSize;
   final ZoomableController zoomableController;
-  final double displayWidth;
-  final double displayHeight;
-  final double contentWidth;
-  final double contentHeight;
 
   @override
   State<StatefulWidget> createState() {
@@ -48,10 +47,8 @@ class _ZoomableContainerBuilderState extends State<_ZoomableContainerBuilder> {
   Widget build(BuildContext context) {
     final zoomContainer = ZoomableContainer(
       widget.child,
-      contentWidth: widget.contentWidth,
-      contentHeight: widget.contentHeight,
-      displayWidth: widget.displayWidth,
-      displayHeight: widget.displayHeight,
+      contentSize: widget.contentSize,
+      displaySize: widget.displaySize,
       fromTransform: animated ? from : null,
       transform: widget.zoomableController.transformMatrix,
       clipToBounds: false,

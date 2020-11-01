@@ -1,62 +1,49 @@
 part of 'zoomable_editor.dart';
 
+class _ZoomableEditRectContainer extends StatefulWidget {
 
-class _ZoomableEditorControl extends StatefulWidget {
-
-  const _ZoomableEditorControl(
+  const _ZoomableEditRectContainer(
       this.child,
       this.zoomableController,
       {
-        @required this.displayWidth,
-        @required this.displayHeight,
-        @required this.contentWidth,
-        @required this.contentHeight,
+        @required this.insets,
       });
 
   final Widget child;
+  final EdgeInsets insets;
   final ZoomableController zoomableController;
-  final double displayWidth;
-  final double displayHeight;
-  final double contentWidth;
-  final double contentHeight;
 
   @override
   State<StatefulWidget> createState() {
-    return _ZoomableEditorControlState();
+    return _ZoomableEditRectContainerState();
   }
 }
 
-class _ZoomableEditorControlState extends State<_ZoomableEditorControl> {
+class _ZoomableEditRectContainerState extends State<_ZoomableEditRectContainer> {
 
-  bool animated = false;
-  Matrix4 from;
-  Matrix4 to;
 
   @override
   void initState() {
-    widget.zoomableController._onChangedInternal = ({bool animated, Matrix4 from, Matrix4 to}) {
-      setState(() {
-        this.animated = animated;
-        this.from = from;
-        this.to = to;
-      });
-    };
     super.initState();
   }
 
   @override
   Widget build(BuildContext context) {
-    final zoomContainer = ZoomableContainer(
-      widget.child,
-      contentWidth: widget.contentWidth,
-      contentHeight: widget.contentHeight,
-      displayWidth: widget.displayWidth,
-      displayHeight: widget.displayHeight,
-      fromTransform: animated ? from : null,
-      transform: widget.zoomableController.transformMatrix,
-      clipToBounds: false,
-    );
-    return zoomContainer;
+    return Container(
+          padding: widget.insets,
+          child: Container(
+              foregroundDecoration: BoxDecoration(
+              border: Border.all(width: 2, color: Colors.white),
+              ),
+              child: _ZoomableContainerBuilder(
+                widget.child,
+                widget.zoomableController,
+                contentWidth: widget.contentWidth,
+                contentHeight: widget.contentHeight,
+                displayWidth: contentDisplaySize.width,
+                displayHeight: contentDisplaySize.height,
+              )
+            )
+      );
   }
-
 }

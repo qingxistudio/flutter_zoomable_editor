@@ -5,23 +5,28 @@ class ZoomableContainer extends StatefulWidget {
   const ZoomableContainer(
       this.child,
       {
-        @required this.displayWidth,
-        @required this.displayHeight,
-        @required this.contentWidth,
-        @required this.contentHeight,
+        this.displaySize,
+        this.contentSize,
         this.fromTransform,
         this.transform,
         this.clipToBounds = true,
       });
 
+  /// [child] The content to show with transform
   final Widget child;
-  final double displayHeight;
-  final double displayWidth;
-  final double contentHeight;
-  final double contentWidth;
+  /// [displaySize] Size for the editor container
+  final Size displaySize;
+  /// [contentSize] Size of the content to scale and move
+  final Size contentSize;
   final Matrix4 fromTransform;
   final Matrix4 transform;
+  /// [clipToBounds] Should clip overflow content
   final bool clipToBounds;
+  
+  double get displayWidth => displaySize.width;
+  double get displayHeight => displaySize.height;
+  double get contentWidth => contentSize.width;
+  double get contentHeight => contentSize.height;
 
   @override
   State<StatefulWidget> createState() {

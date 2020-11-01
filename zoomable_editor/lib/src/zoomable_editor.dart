@@ -212,10 +212,8 @@ class _ZoomableEditorState extends State<ZoomableEditor> {
               child: _ZoomableContainerBuilder(
                 widget.child,
                 widget.zoomableController,
-                contentWidth: widget.contentWidth,
-                contentHeight: widget.contentHeight,
-                displayWidth: contentDisplaySize.width,
-                displayHeight: contentDisplaySize.height,
+                contentSize: widget.contentSize,
+                displaySize: contentDisplaySize,
               )
             )
       ),
