@@ -67,7 +67,7 @@ class _ZoomableContainerState extends State<ZoomableContainer> with SingleTicker
                     transform: Matrix4Tween(
                                 begin: widget.fromTransform,
                                 end: toTransform
-                              ).evaluate(new CurvedAnimation(
+                              ).evaluate(CurvedAnimation(
                                 parent: _controller,
                                 curve: Curves.easeOut
                               )),

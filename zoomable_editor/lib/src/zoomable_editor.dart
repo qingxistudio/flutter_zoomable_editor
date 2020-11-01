@@ -1,7 +1,9 @@
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:zoomable_editor/src/zoomable_container.dart';
 
 part 'zoomable_editor_controller.part.dart';
+part 'zoomable_editor_container.part.dart';
 
 class ZoomableEditor extends StatefulWidget {
 
@@ -40,6 +42,7 @@ class _ZoomableEditorState extends State<ZoomableEditor> {
 
   double _contentDisplayScale;
   // BouncingScrollPhysics _bouncingScrollPhysics;
+  _DoubleTapRecognizer _doubleTapRecognizer;
 
   /// Display Size : 400 * 400,
   /// Content Size : 800 * 1000, Fit Size: 400 * 500
@@ -48,7 +51,6 @@ class _ZoomableEditorState extends State<ZoomableEditor> {
   Offset allowOffsetInContentWithScale() {
 
     final contentDisplaySize = editorContentFitDisplaySize();
-    print('_contentDisplayScale $_contentDisplayScale contentDisplaySize $contentDisplaySize');
     final curScale = widget.zoomableController.scale;
     final allowOffsetX = (widget.contentWidth * curScale - contentDisplaySize.width / _contentDisplayScale) / 2;
     final allowOffsetY = (widget.contentHeight * curScale - contentDisplaySize.height / _contentDisplayScale) / 2;
@@ -57,17 +59,36 @@ class _ZoomableEditorState extends State<ZoomableEditor> {
 
   @override
   void initState() {
+    if (widget.zoomableController.doubleTapEnabled) {
+      _doubleTapRecognizer = _DoubleTapRecognizer((){
+        final scale = widget.zoomableController.scale;
+        final fromTransform = widget.zoomableController.transformMatrix;
+        if (scale == widget.zoomableController.minScale) {
+          widget.zoomableController.updateScale(widget.zoomableController.maxScale, notify: false);
+        } else {
+          widget.zoomableController.updateScale(widget.zoomableController.minScale, notify: false);
+        }
+        widget.zoomableController.updateOffset(Offset.zero, notify: false);
+        widget.zoomableController.notifyChange(animated: true, fromTransfrom: fromTransform);
+
+
+      });
+    }
     // _bouncingScrollPhysics = BouncingScrollPhysics(parent: AlwaysScrollableScrollPhysics());
     super.initState();
   }
 
   void _onScaleStart(ScaleStartDetails details) {
+    _doubleTapRecognizer?.addDownEvent(details.focalPoint);
+
     _startGlobalFocalPoint = details.focalPoint;
     _startOffset = widget.zoomableController.offset;
     _startScale = widget.zoomableController.scale;
   }
 
   void _onScaleUpdate(ScaleUpdateDetails details) {
+    _doubleTapRecognizer?.updateOffset(details.focalPoint);
+
     final offsetDelta = -(details.focalPoint - _startGlobalFocalPoint);
     final newScale = _startScale * details.scale;
     final newOffset = _startOffset + offsetDelta / widget.zoomableController.scale / _contentDisplayScale;
@@ -77,18 +98,26 @@ class _ZoomableEditorState extends State<ZoomableEditor> {
 
   void _onScaleEnd(ScaleEndDetails details) {
     final fromTransform = widget.zoomableController.transformMatrix;
-    final newScale = widget.zoomableController.scale.clamp(widget.zoomableController.minScale, widget.zoomableController.maxScale).toDouble();
+    final newScale = widget.zoomableController.scale.clamp(
+        widget.zoomableController.minScale, widget.zoomableController.maxScale).toDouble();
+
     /// limit scale to avoid out of bound
     widget.zoomableController.updateScale(newScale, notify: false);
 
     final curOffset = widget.zoomableController.offset;
     final allowOffset = allowOffsetInContentWithScale() / newScale;
-    print('allowOffset: $allowOffset, curOffset $curOffset');
     final dx = (curOffset.dx).clamp(-allowOffset.dx.abs(), allowOffset.dx.abs()).toDouble();
     final dy = (curOffset.dy).clamp(-allowOffset.dy.abs(), allowOffset.dy.abs()).toDouble();
+
     /// limit offset to avoid out of bound
     widget.zoomableController.updateOffset(Offset(dx, dy), notify: false);
     widget.zoomableController.notifyChange(animated: true, fromTransfrom: fromTransform);
+
+    _startGlobalFocalPoint = null;
+    _startScale = null;
+    _startOffset = null;
+
+    _doubleTapRecognizer?.addEndEvent();
   }
 
   Size editorContentFitDisplaySize() {
@@ -108,7 +137,6 @@ class _ZoomableEditorState extends State<ZoomableEditor> {
         displaySize = Size(w, w / contentDisplayWHRatio);
       }
     }
-    final scaleFactor = widget.zoomableController.scale;
     if (contentDisplayWHRatio > contentOriginWHRatio) {
       _contentDisplayScale =  displaySize.width / widget.contentWidth;
     } else {
@@ -196,62 +224,69 @@ class _ZoomableEditorState extends State<ZoomableEditor> {
   }
 }
 
-class _ZoomableContainerBuilder extends StatefulWidget {
+/// Timeout to recognize as a tap
+const kTapTimeout = 250;
+/// Max offset distance to recognize as a tap
+const kTapMaxDistance = 18;
 
-  const _ZoomableContainerBuilder(
-      this.child,
-      this.zoomableController,
-      {
-        @required this.displayWidth,
-        @required this.displayHeight,
-        @required this.contentWidth,
-        @required this.contentHeight,
-      });
+class _DoubleTapRecognizer {
 
-  final Widget child;
-  final ZoomableController zoomableController;
-  final double displayWidth;
-  final double displayHeight;
-  final double contentWidth;
-  final double contentHeight;
+  _DoubleTapRecognizer(this.onDoubleTap): assert(onDoubleTap != null);
 
-  @override
-  State<StatefulWidget> createState() {
-    return _ZoomableContainerBuilderState();
-  }
-}
+  final VoidCallback onDoubleTap;
 
-class _ZoomableContainerBuilderState extends State<_ZoomableContainerBuilder> {
+  int _tapCount = 0;
+  int _lastTapTimestamp;
+  int _downTimestamp;
 
-  bool animated = false;
-  Matrix4 from;
-  Matrix4 to;
+  Offset _startOffset;
+  Offset _currentOffset;
 
-  @override
-  void initState() {
-    widget.zoomableController.onChanged = ({bool animated, Matrix4 from, Matrix4 to}) {
-      setState(() {
-        this.animated = animated;
-        this.from = from;
-        this.to = to;
-      });
-    };
-    super.initState();
+
+  void addDownEvent(Offset startOffset) {
+    _downTimestamp = DateTime.now().millisecondsSinceEpoch;
+    _startOffset = startOffset;
+    _currentOffset = null;
   }
 
-  @override
-  Widget build(BuildContext context) {
-    final zoomContainer = ZoomableContainer(
-      widget.child,
-      contentWidth: widget.contentWidth,
-      contentHeight: widget.contentHeight,
-      displayWidth: widget.displayWidth,
-      displayHeight: widget.displayHeight,
-      fromTransform: animated ? from : null,
-      transform: widget.zoomableController.transformMatrix,
-      clipToBounds: false,
-    );
-    return zoomContainer;
+  void updateOffset(Offset offset) {
+    _currentOffset = offset;
   }
+
+  void addEndEvent() {
+    if (_downTimestamp == null || _startOffset == null) {
+      assert(false);
+      cancel();
+      return;
+    }
+    final nowTS = DateTime.now().millisecondsSinceEpoch;
+    if (nowTS - _downTimestamp > kTapTimeout
+        || (_currentOffset != null && (_currentOffset - _startOffset).distance > kTapMaxDistance)) {
+      cancel();
+    } else {
+      if (_tapCount == 0) {
+        _tapCount = 1;
+        _lastTapTimestamp = nowTS;
+      } else {
+        if (nowTS - _lastTapTimestamp > kTapTimeout) {
+          cancel();
+        } else {
+          onDoubleTap();
+          reset();
+        }
+      }
+    }
+  }
+
+  void cancel() {
+    _tapCount = 0;
+    _lastTapTimestamp = null;
+    _downTimestamp = null;
+
+    _startOffset = null;
+    _currentOffset = null;
+  }
+
+  void reset() => cancel();
 
 }
