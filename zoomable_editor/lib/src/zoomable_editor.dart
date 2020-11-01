@@ -4,6 +4,7 @@ import 'package:zoomable_editor/src/zoomable_container.dart';
 
 part 'zoomable_editor_controller.part.dart';
 part 'zoomable_editor_container.part.dart';
+part 'zoomable_editor_control.part.dart';
 
 class ZoomableEditor extends StatefulWidget {
 
@@ -11,22 +12,29 @@ class ZoomableEditor extends StatefulWidget {
       this.child,
       this.zoomableController,
       {
-        @required this.editorWidth,
-        @required this.editorHeight,
-        @required this.contentWidth,
-        @required this.contentHeight,
+        @required this.editorSize,
+        @required this.contentSize,
         this.displayWHRatio,
         this.contentInsets,
-      }): assert(editorWidth != null), assert(editorHeight != null), assert(contentWidth != null), assert(contentHeight != null);
+      }): assert(editorSize != null), assert(contentSize != null);
 
+  /// [child] The content to zoom
   final Widget child;
-  final double editorWidth;
-  final double editorHeight;
-  final double contentWidth;
-  final double contentHeight;
+  /// [editorSize] Size for the editor container
+  final Size editorSize;
+  /// [contentSize] Size of the content to scale and move
+  final Size contentSize;
+  /// [displayWHRatio] default value is [contentWidth] / [contentHeight]
   final double displayWHRatio;
+  /// [contentInsets] Custom the content display insets in the editor
   final EdgeInsets contentInsets;
+  /// [zoomableController] Control the sale and offset of the content
   final ZoomableController zoomableController;
+
+  double get contentWidth => contentSize.width;
+  double get contentHeight => contentSize.height;
+  double get editorWidth => editorSize.width;
+  double get editorHeight => editorSize.height;
 
   @override
   State<StatefulWidget> createState() {
