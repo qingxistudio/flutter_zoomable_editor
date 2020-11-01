@@ -65,6 +65,6 @@ class ZoomableController {
 
 
   Matrix4 get transformMatrix {
-   return Matrix4.identity()..scale(-scale,-scale)..translate(offset.dx,offset.dy);
+   return Matrix4.identity()..scale(scale,scale)..translate(offset.dx,offset.dy);
   }
 }
