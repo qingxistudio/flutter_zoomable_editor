@@ -2,14 +2,21 @@
 
 Zoomable editor to control child widget's position, scale, rotation
 
+Features:
+
+- Support scale and offset to edit a widget's transform matrix.
+- Auto bounce back if the offset exceed the rect.
+- Support double tap to reset scale and offset.
+
+
+
+
 ## Getting Started
 
 
 Example
 
 ```
-
-
 class EditorLimitExample extends StatelessWidget {
 
 
@@ -76,5 +83,7 @@ class EditorLimitExample extends StatelessWidget {
   }
 }
 
+
+![alt Sample Screenshot](https://raw.githubusercontent.com/qingxistudio/flutter_zoomable_editor/master/sample.jpg)
 
 ```
