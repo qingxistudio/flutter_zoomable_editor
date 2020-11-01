@@ -5,3 +5,7 @@
 ## [1.1.0] - 11/1/2020.
 
 * Support double tap to reset scale and offset
+
+## [1.1.1] - 11/1/2020.
+
+* Update README.md

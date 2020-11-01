@@ -83,7 +83,7 @@ class EditorLimitExample extends StatelessWidget {
   }
 }
 
+```
+## Example Screenshot
 
 ![alt Sample Screenshot](https://raw.githubusercontent.com/qingxistudio/flutter_zoomable_editor/master/sample.jpg)
-
-```
