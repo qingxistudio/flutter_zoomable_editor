@@ -70,8 +70,6 @@ class _ZoomableEditorState extends State<ZoomableEditor> {
         }
         widget.zoomableController.updateOffset(Offset.zero, notify: false);
         widget.zoomableController.notifyChange(animated: true, fromTransfrom: fromTransform);
-
-
       });
     }
     // _bouncingScrollPhysics = BouncingScrollPhysics(parent: AlwaysScrollableScrollPhysics());
