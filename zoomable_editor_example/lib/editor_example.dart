@@ -30,10 +30,8 @@ class EditorExample extends StatelessWidget {
     final editor = ZoomableEditor(
         imgContent,
         zoomableController,
-        editorWidth: screenSize.width,
-        editorHeight: screenSize.width,
-        contentHeight: sampleImageHeightInPoint,
-        contentWidth: sampleImageWidthInPoint,
+        editorSize: screenSize,
+        contentSize: Size(sampleImageWidthInPoint, sampleImageHeightInPoint),
         displayWHRatio: 1,
     );
 

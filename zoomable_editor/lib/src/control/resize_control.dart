@@ -1,5 +1,7 @@
 
 import 'package:flutter/material.dart';
+import 'package:zoomable_editor/src/bloc/crop_rect_controller_provider.dart';
+import 'package:zoomable_editor/src/bloc/zoomable_controller_provider.dart';
 
 part 'resize_control.part.dart';
 

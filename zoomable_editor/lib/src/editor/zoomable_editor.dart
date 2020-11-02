@@ -1,9 +1,16 @@
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
-import 'package:zoomable_editor/src/zoomable_container.dart';
+import 'package:zoomable_editor/src/bloc/crop_rect_controller_provider.dart';
+import 'package:zoomable_editor/src/bloc/editor_size_inherited_model.dart';
+import 'package:zoomable_editor/src/bloc/zoomable_controller_provider.dart';
+import 'package:zoomable_editor/src/content_container/zoomable_container.dart';
+import 'package:zoomable_editor/src/control/resize_control.dart';
+import 'package:zoomable_editor/zoomable_editor.dart';
 
+part 'zoomable_editor_content.part.dart';
 part 'zoomable_editor_controller.part.dart';
-part 'zoomable_editor_container.part.dart';
+part 'zoomable_editor_bloc_builder.part.dart';
+part 'zoomable_editor_canvas.part.dart';
 part 'zoomable_editor_control.part.dart';
 part 'zoomable_editor_crop_rect.part.dart';
 
@@ -17,6 +24,8 @@ class ZoomableEditor extends StatefulWidget {
         @required this.contentSize,
         this.displayWHRatio,
         this.contentInsets,
+        this.clipOverflow = true,
+        this.resizeEnabled = false,
       }): assert(editorSize != null), assert(contentSize != null);
 
   /// [child] The content to zoom
@@ -31,6 +40,10 @@ class ZoomableEditor extends StatefulWidget {
   final EdgeInsets contentInsets;
   /// [zoomableController] Control the sale and offset of the content
   final ZoomableController zoomableController;
+  /// [clipOverflow] clip overflow content if true.
+  final bool clipOverflow;
+  /// [resizeEnabled] show resize bars to control
+  final bool resizeEnabled;
 
   double get contentWidth => contentSize.width;
   double get contentHeight => contentSize.height;
@@ -78,7 +91,7 @@ class _ZoomableEditorState extends State<ZoomableEditor> {
           widget.zoomableController.updateScale(widget.zoomableController.minScale, notify: false);
         }
         widget.zoomableController.updateOffset(Offset.zero, notify: false);
-        widget.zoomableController.notifyChange(animated: true, fromTransfrom: fromTransform);
+        widget.zoomableController.notifyChange(animated: true, fromTransform: fromTransform);
       });
     }
     // _bouncingScrollPhysics = BouncingScrollPhysics(parent: AlwaysScrollableScrollPhysics());
@@ -118,7 +131,7 @@ class _ZoomableEditorState extends State<ZoomableEditor> {
 
     /// limit offset to avoid out of bound
     widget.zoomableController.updateOffset(Offset(dx, dy), notify: false);
-    widget.zoomableController.notifyChange(animated: true, fromTransfrom: fromTransform);
+    widget.zoomableController.notifyChange(animated: true, fromTransform: fromTransform);
 
     _startGlobalFocalPoint = null;
     _startScale = null;
@@ -194,37 +207,35 @@ class _ZoomableEditorState extends State<ZoomableEditor> {
   @override
   Widget build(BuildContext context) {
 
-    final contentDisplaySize = editorContentFitDisplaySize();
     final insets = editorEdgeInsets();
 
+    final editorGlobalKey = GlobalKey();
     final editorCanvasWidget = createEdgeMaskWithChild(child: Container(
-      clipBehavior: Clip.antiAlias,
+      clipBehavior: widget.clipOverflow ? Clip.antiAlias : Clip.none,
       decoration: BoxDecoration(
           border: Border.all(color: Colors.transparent, width: 0)
       ),
       width: widget.editorWidth,
       height: widget.editorHeight,
-      child: Container(
-          padding: insets,
-          child: Container(
-              foregroundDecoration: BoxDecoration(
-              border: Border.all(width: 2, color: Colors.white),
-              ),
-              child: _ZoomableContainerBuilder(
-                widget.child,
-                widget.zoomableController,
-                contentSize: widget.contentSize,
-                displaySize: contentDisplaySize,
-              )
-            )
-      ),
+      child: _ZoomableEditorCanvas(widget.child, insets: insets,),
     ));
-
-    return GestureDetector(
-      onScaleStart: _onScaleStart,
-      onScaleUpdate: _onScaleUpdate,
-      onScaleEnd: _onScaleEnd,
-      child: editorCanvasWidget,
+    final editorCropRectController = ZoomableEditorCropRectController(
+        editorGlobalKey,
+        widget.contentSize,
+        widget.editorSize,
+        insets
+    );
+    return _ZoomableEditorBlocBuilder(
+        widget.zoomableController,
+        editorCropRectController,
+        editorSize: widget.editorSize,
+        contentSize: widget.contentSize,
+        child:GestureDetector(
+          onScaleStart: _onScaleStart,
+          onScaleUpdate: _onScaleUpdate,
+          onScaleEnd: _onScaleEnd,
+          child: editorCanvasWidget,
+        )
     );
   }
 }

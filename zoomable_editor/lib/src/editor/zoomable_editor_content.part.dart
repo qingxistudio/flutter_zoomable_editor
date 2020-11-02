@@ -1,9 +1,9 @@
 part of 'zoomable_editor.dart';
 
 
-class _ZoomableContainerBuilder extends StatefulWidget {
+class _ZoomableContentBuilder extends StatefulWidget {
 
-  const _ZoomableContainerBuilder(
+  const _ZoomableContentBuilder(
       this.child,
       this.zoomableController,
       {
@@ -21,11 +21,11 @@ class _ZoomableContainerBuilder extends StatefulWidget {
 
   @override
   State<StatefulWidget> createState() {
-    return _ZoomableContainerBuilderState();
+    return _ZoomableContentBuilderState();
   }
 }
 
-class _ZoomableContainerBuilderState extends State<_ZoomableContainerBuilder> {
+class _ZoomableContentBuilderState extends State<_ZoomableContentBuilder> {
 
   bool animated = false;
   Matrix4 from;
@@ -33,14 +33,21 @@ class _ZoomableContainerBuilderState extends State<_ZoomableContainerBuilder> {
 
   @override
   void initState() {
-    widget.zoomableController._onChangedInternal = ({bool animated, Matrix4 from, Matrix4 to}) {
-      setState(() {
-        this.animated = animated;
-        this.from = from;
-        this.to = to;
-      });
-    };
+    widget.zoomableController.addListener(_onZoomChange);
     super.initState();
+  }
+
+  @override
+  void dispose() {
+    widget.zoomableController.removeListener(_onZoomChange);
+    super.dispose();
+  }
+
+  void _onZoomChange() {
+    final newState = widget.zoomableController.value;
+    animated = newState.animated;
+    from = newState.from;
+    to = newState.to;
   }
 
   @override
@@ -55,5 +62,4 @@ class _ZoomableContainerBuilderState extends State<_ZoomableContainerBuilder> {
     );
     return zoomContainer;
   }
-
 }

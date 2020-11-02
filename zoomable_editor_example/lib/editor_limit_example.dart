@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:zoomable_editor/zoomable_editor.dart';
 
-import 'constants.dart';
-
 
 class EditorLimitExample extends StatelessWidget {
 
@@ -36,11 +34,8 @@ class EditorLimitExample extends StatelessWidget {
           child: imgContent,
         ),
         zoomableController,
-        editorWidth: 250,
-        editorHeight: 250,
-        contentHeight: contentH,
-        contentWidth: contentW,
-        displayWHRatio: 1,
+        editorSize: const Size(250, 250),
+        contentSize: const Size(contentW, contentH),
     );
 
     return Scaffold(

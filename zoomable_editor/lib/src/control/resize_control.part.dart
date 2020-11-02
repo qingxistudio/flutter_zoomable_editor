@@ -28,6 +28,7 @@ class _ResizeControlDotState extends State<ResizeControlDot> {
   @override
   Widget build(BuildContext context) {
 
+    final ZoomableEditorCropRectController cropRectController = CropRectControllerProvider.of(context).notifier;
     final barRectWidget = Container(
                 width: _defaultDotDisplaySize.width,
                 height: _defaultDotDisplaySize.height,
@@ -51,10 +52,10 @@ class _ResizeControlDotState extends State<ResizeControlDot> {
       onPanStart: (dragDetail)  {
       },
       onPanUpdate: (dragDetail) {
-
+        cropRectController.updateByEdgeOffset(dragDetail.localPosition, widget.alignment);
       },
       onPanEnd: (dragDetail) {
-
+        cropRectController.end(true);
       },
       onPanCancel: () {
 
