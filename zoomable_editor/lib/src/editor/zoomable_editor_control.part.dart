@@ -2,9 +2,7 @@ part of 'zoomable_editor.dart';
 
 class _ZoomableEditorCropControl extends StatefulWidget {
 
-  const _ZoomableEditorCropControl(this.rect);
-
-  final Rect rect;
+  const _ZoomableEditorCropControl();
 
   @override
   State<StatefulWidget> createState() {
@@ -12,12 +10,30 @@ class _ZoomableEditorCropControl extends StatefulWidget {
   }
 }
 
-
 class _ZoomableEditorCropControlState extends State<_ZoomableEditorCropControl> {
-  @override
-  Widget build(BuildContext context) {
+  ZoomableEditorCropRectController _controller;
 
-    return Positioned.fromRect(rect: widget.rect, child: ResizeControl(widget.rect.size),);
+  void _onUpdateCropRect() {
+    if (_controller != null) {
+      setState(() {});
+    }
   }
 
+  @override
+  void dispose() {
+    _controller.removeListener(_onUpdateCropRect);
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    _controller = CropRectControllerProvider.of(context).controller;
+    final cropRect = _controller.displayRect;
+    final rectWithControlBarInsets = Rect.fromCenter(
+        center: cropRect.center,
+        width: cropRect.width+CutControl.extraInsets.horizontal,
+        height: cropRect.height+CutControl.extraInsets.vertical
+    );
+    return Positioned.fromRect(rect: rectWithControlBarInsets, child: CutControl(rectWithControlBarInsets.size),);
+  }
 }

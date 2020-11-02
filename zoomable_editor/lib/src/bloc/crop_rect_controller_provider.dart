@@ -20,6 +20,12 @@ class ZoomableEditorCropRectController extends ValueNotifier<ZoomableEditorCropR
   final Size contentSize;
   final Size editorSize;
   EdgeInsets get insets => value.insets;
+  Rect get displayRect => Rect.fromLTWH(
+      insets.left,
+      insets.top,
+      editorSize.width-insets.horizontal,
+      editorSize.height-insets.vertical
+  );
   bool updating;
 
   Rect get cropRect => Rect.fromLTWH(
@@ -71,8 +77,8 @@ class ZoomableEditorCropRectController extends ValueNotifier<ZoomableEditorCropR
 
 class CropRectControllerProvider extends InheritedNotifier<ZoomableEditorCropRectController> {
 
-  const CropRectControllerProvider(this.controller, {Widget child}): super(child: child);
-  final ZoomableEditorCropRectController controller;
+  const CropRectControllerProvider(ZoomableEditorCropRectController controller, {Widget child}): super(child: child, notifier: controller);
+  ZoomableEditorCropRectController get controller => notifier;
 
   static CropRectControllerProvider of(BuildContext context) {
     return context.dependOnInheritedWidgetOfExactType<CropRectControllerProvider>();

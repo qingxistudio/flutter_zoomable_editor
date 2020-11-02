@@ -28,11 +28,11 @@ class EditorExample extends StatelessWidget {
     );
     zoomableController.updateScale(2);
     final editor = ZoomableEditor(
-        imgContent,
         zoomableController,
         editorSize: screenSize,
         contentSize: Size(sampleImageWidthInPoint, sampleImageHeightInPoint),
         displayWHRatio: 1,
+        child: imgContent,
     );
 
     return Scaffold(

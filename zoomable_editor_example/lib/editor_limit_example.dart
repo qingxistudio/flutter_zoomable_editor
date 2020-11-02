@@ -23,19 +23,20 @@ class EditorLimitExample extends StatelessWidget {
     const contentW = 400.0;
     const contentH = 600.0;
     final imgContent = Image(image: createAssetImage());
-    final editor = ZoomableEditor(
-        Container(
-          clipBehavior: Clip.antiAlias,
-          decoration: BoxDecoration(
-              border: Border.all(color: Colors.transparent, width: 0)
-          ),
-          width: contentW,
-          height: contentH,
-          child: imgContent,
+    final editor =   ZoomableEditor(
+      zoomableController,
+      editorSize: const Size(250, 250),
+      contentSize: const Size(contentW, contentH),
+      resizeEnabled: true,
+      child: Container(
+        clipBehavior: Clip.antiAlias,
+        decoration: BoxDecoration(
+            border: Border.all(color: Colors.transparent, width: 0)
         ),
-        zoomableController,
-        editorSize: const Size(250, 250),
-        contentSize: const Size(contentW, contentH),
+        width: contentW,
+        height: contentH,
+        child: imgContent,
+      ),
     );
 
     return Scaffold(

@@ -4,7 +4,7 @@ import 'package:zoomable_editor/src/bloc/crop_rect_controller_provider.dart';
 import 'package:zoomable_editor/src/bloc/editor_size_inherited_model.dart';
 import 'package:zoomable_editor/src/bloc/zoomable_controller_provider.dart';
 import 'package:zoomable_editor/src/content_container/zoomable_container.dart';
-import 'package:zoomable_editor/src/control/resize_control.dart';
+import 'package:zoomable_editor/src/control/cut_control.dart';
 import 'package:zoomable_editor/zoomable_editor.dart';
 
 part 'zoomable_editor_content.part.dart';
@@ -17,11 +17,11 @@ part 'zoomable_editor_crop_rect.part.dart';
 class ZoomableEditor extends StatefulWidget {
 
   const ZoomableEditor(
-      this.child,
       this.zoomableController,
       {
         @required this.editorSize,
         @required this.contentSize,
+        @required this.child,
         this.displayWHRatio,
         this.contentInsets,
         this.clipOverflow = true,
@@ -217,7 +217,7 @@ class _ZoomableEditorState extends State<ZoomableEditor> {
       ),
       width: widget.editorWidth,
       height: widget.editorHeight,
-      child: _ZoomableEditorCanvas(widget.child, insets: insets,),
+      child: _ZoomableEditorCanvas(widget.child,),
     ));
     final editorCropRectController = ZoomableEditorCropRectController(
         editorGlobalKey,
@@ -225,16 +225,31 @@ class _ZoomableEditorState extends State<ZoomableEditor> {
         widget.editorSize,
         insets
     );
+
+
+   final canvasWidgetWithGesture =  GestureDetector(
+          onScaleStart: _onScaleStart,
+          onScaleUpdate: _onScaleUpdate,
+          onScaleEnd: _onScaleEnd,
+          child: editorCanvasWidget,
+        );
+   final stackChildren = <Widget>[];
+   stackChildren.add(Positioned.fill(child: canvasWidgetWithGesture,));
+   if (widget.resizeEnabled) {
+     const resizeControlWidget = _ZoomableEditorCropControl();
+     stackChildren.add(const Positioned.fill(child: resizeControlWidget,));
+   }
     return _ZoomableEditorBlocBuilder(
         widget.zoomableController,
         editorCropRectController,
         editorSize: widget.editorSize,
         contentSize: widget.contentSize,
-        child:GestureDetector(
-          onScaleStart: _onScaleStart,
-          onScaleUpdate: _onScaleUpdate,
-          onScaleEnd: _onScaleEnd,
-          child: editorCanvasWidget,
+        child:Container(
+          width: widget.editorWidth,
+          height: widget.editorHeight,
+          child: Stack(
+            children: stackChildren,
+          ),
         )
     );
   }
