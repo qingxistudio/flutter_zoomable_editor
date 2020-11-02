@@ -22,7 +22,7 @@ class ZoomableContainer extends StatefulWidget {
   final Matrix4 transform;
   /// [clipToBounds] Should clip overflow content
   final bool clipToBounds;
-  
+
   double get displayWidth => displaySize.width;
   double get displayHeight => displaySize.height;
   double get contentWidth => contentSize.width;
@@ -43,6 +43,12 @@ class _ZoomableContainerState extends State<ZoomableContainer> with SingleTicker
   void initState() {
     _controller = AnimationController(vsync: this, duration: const Duration(milliseconds: 200));
     super.initState();
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
   }
 
   @override

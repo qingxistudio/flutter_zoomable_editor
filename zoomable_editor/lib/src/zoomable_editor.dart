@@ -5,6 +5,7 @@ import 'package:zoomable_editor/src/zoomable_container.dart';
 part 'zoomable_editor_controller.part.dart';
 part 'zoomable_editor_container.part.dart';
 part 'zoomable_editor_control.part.dart';
+part 'zoomable_editor_crop_rect.part.dart';
 
 class ZoomableEditor extends StatefulWidget {
 
