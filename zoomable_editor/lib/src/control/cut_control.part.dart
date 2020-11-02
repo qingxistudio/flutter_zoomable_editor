@@ -58,20 +58,21 @@ class _CutControlBarState extends State<CutControlBar> {
       height: widget.hitSize.height,
       child: _CutControlBarIcon(widget.displaySize),
     );
+    final controller = CropRectControllerProvider.of(context).controller;
 
     return GestureDetector(
       child: container,
       onPanStart: (dragDetail)  {
-
+        controller.updateByEdgeOffset(Offset.zero, widget.alignmentID);
       },
       onPanUpdate: (dragDetail) {
-
+        controller.updateByEdgeOffset(Offset(1, 0), widget.alignmentID);
       },
       onPanEnd: (dragDetail) {
-
+        controller.end(true);
       },
       onPanCancel: () {
-
+        controller.end(true);
       }
     );
   }

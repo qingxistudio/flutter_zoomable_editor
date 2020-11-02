@@ -28,6 +28,34 @@ class _ZoomableEditorCanvasState extends State<_ZoomableEditorCanvas> {
     super.dispose();
   }
 
+  Widget createEdgeMaskWithChild({@required Widget child}) {
+    final edgeInsets = _controller.insets;
+    final maskColor = Colors.white.withOpacity(0.4);
+    return Container(
+      child: child,
+      foregroundDecoration: BoxDecoration(
+        border: Border(
+          right: BorderSide(
+            width: edgeInsets.right,
+            color: maskColor,
+          ),
+          left: BorderSide(
+            width: edgeInsets.left,
+            color: maskColor,
+          ),
+          bottom: BorderSide(
+            width: edgeInsets.bottom,
+            color: maskColor,
+          ),
+          top: BorderSide(
+            width: edgeInsets.top,
+            color: maskColor,
+          ),
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     _controller = CropRectControllerProvider.of(context).controller;
@@ -40,7 +68,7 @@ class _ZoomableEditorCanvasState extends State<_ZoomableEditorCanvas> {
     final w = infoModel.editorSize.width - insets.horizontal;
     final h = infoModel.editorSize.height - insets.vertical;
     final contentDisplaySize = Size(w, h);
-    return Container(
+    return createEdgeMaskWithChild(child: Container(
           padding: insets,
           child: Container(
               foregroundDecoration: BoxDecoration(
@@ -53,6 +81,6 @@ class _ZoomableEditorCanvasState extends State<_ZoomableEditorCanvas> {
                 displaySize: contentDisplaySize,
               )
             )
-      );
+      ));
   }
 }

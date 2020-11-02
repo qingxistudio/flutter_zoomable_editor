@@ -50,13 +50,23 @@ class _ZoomableContentBuilderState extends State<_ZoomableContentBuilder> {
     to = newState.to;
   }
 
+  void resetAnimatedFlag() {
+    animated = false;
+  }
+
   @override
   Widget build(BuildContext context) {
+    bool shouldAnimated = animated;
+    resetAnimatedFlag();
+    final controller = CropRectControllerProvider.of(context).controller;
+    if (controller.updating ?? false) {
+      shouldAnimated = false;
+    }
     final zoomContainer = ZoomableContainer(
       widget.child,
       contentSize: widget.contentSize,
       displaySize: widget.displaySize,
-      fromTransform: animated ? from : null,
+      fromTransform: shouldAnimated ? from : null,
       transform: widget.zoomableController.transformMatrix,
       clipToBounds: false,
     );

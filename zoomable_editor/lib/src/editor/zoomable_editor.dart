@@ -66,17 +66,20 @@ class _ZoomableEditorState extends State<ZoomableEditor> {
   // BouncingScrollPhysics _bouncingScrollPhysics;
   _DoubleTapRecognizer _doubleTapRecognizer;
 
-  /// Display Size : 400 * 400,
-  /// Content Size : 800 * 1000, Fit Size: 400 * 500
-  /// [allowOffsetInContentWithScale] will be Offset(0, 50)
-  /// Allow from Offset(0, -50) to Offset(0, 100)
-  Offset allowOffsetInContentWithScale() {
+  ZoomableEditorCropRectController editorCropRectController;
 
-    final contentDisplaySize = editorContentFitDisplaySize();
-    final curScale = widget.zoomableController.scale;
-    final allowOffsetX = (widget.contentWidth * curScale - contentDisplaySize.width / _contentDisplayScale) / 2;
-    final allowOffsetY = (widget.contentHeight * curScale - contentDisplaySize.height / _contentDisplayScale) / 2;
-    return Offset(allowOffsetX, allowOffsetY);
+  double get currentDisplayWHRatio {
+    if (editorCropRectController == null) {
+      final contentOriginWHRatio = widget.contentWidth / widget.contentHeight;
+      return widget.displayWHRatio ?? contentOriginWHRatio;
+    } else {
+      return editorCropRectController.displayRect.width / editorCropRectController.displayRect.height;
+    }
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
   }
 
   @override
@@ -96,6 +99,20 @@ class _ZoomableEditorState extends State<ZoomableEditor> {
     }
     // _bouncingScrollPhysics = BouncingScrollPhysics(parent: AlwaysScrollableScrollPhysics());
     super.initState();
+  }
+
+
+  /// Display Size : 400 * 400,
+  /// Content Size : 800 * 1000, Fit Size: 400 * 500
+  /// [allowOffsetInContentWithScale] will be Offset(0, 50)
+  /// Allow from Offset(0, -50) to Offset(0, 100)
+  Offset allowOffsetInContentWithScale() {
+
+    final contentDisplaySize = editorContentFitDisplaySize();
+    final curScale = widget.zoomableController.scale;
+    final allowOffsetX = (widget.contentWidth * curScale - contentDisplaySize.width / _contentDisplayScale) / 2;
+    final allowOffsetY = (widget.contentHeight * curScale - contentDisplaySize.height / _contentDisplayScale) / 2;
+    return Offset(allowOffsetX, allowOffsetY);
   }
 
   void _onScaleStart(ScaleStartDetails details) {
@@ -143,7 +160,7 @@ class _ZoomableEditorState extends State<ZoomableEditor> {
   Size editorContentFitDisplaySize() {
     final editorWHRatio = widget.editorWidth / widget.editorHeight;
     final contentOriginWHRatio = widget.contentWidth / widget.contentHeight;
-    final contentDisplayWHRatio = widget.displayWHRatio ?? contentOriginWHRatio;
+    final contentDisplayWHRatio = currentDisplayWHRatio;
     Size displaySize;
     if (widget.contentInsets != null) {
       displaySize = Size(widget.editorWidth - widget.contentInsets.horizontal, widget.editorHeight - widget.contentInsets.vertical);
@@ -176,33 +193,7 @@ class _ZoomableEditorState extends State<ZoomableEditor> {
     return edgeInsets;
   }
 
-  Widget createEdgeMaskWithChild({@required Widget child}) {
-    final edgeInsets = editorEdgeInsets();
-    final maskColor = Colors.white.withOpacity(0.4);
-    return Container(
-      child: child,
-      foregroundDecoration: BoxDecoration(
-        border: Border(
-          right: BorderSide(
-            width: edgeInsets.right,
-            color: maskColor,
-          ),
-          left: BorderSide(
-            width: edgeInsets.left,
-            color: maskColor,
-          ),
-          bottom: BorderSide(
-            width: edgeInsets.bottom,
-            color: maskColor,
-          ),
-          top: BorderSide(
-            width: edgeInsets.top,
-            color: maskColor,
-          ),
-        ),
-      ),
-    );
-  }
+
 
   @override
   Widget build(BuildContext context) {
@@ -210,7 +201,7 @@ class _ZoomableEditorState extends State<ZoomableEditor> {
     final insets = editorEdgeInsets();
 
     final editorGlobalKey = GlobalKey();
-    final editorCanvasWidget = createEdgeMaskWithChild(child: Container(
+    final editorCanvasWidget = Container(
       clipBehavior: widget.clipOverflow ? Clip.antiAlias : Clip.none,
       decoration: BoxDecoration(
           border: Border.all(color: Colors.transparent, width: 0)
@@ -218,8 +209,8 @@ class _ZoomableEditorState extends State<ZoomableEditor> {
       width: widget.editorWidth,
       height: widget.editorHeight,
       child: _ZoomableEditorCanvas(widget.child,),
-    ));
-    final editorCropRectController = ZoomableEditorCropRectController(
+    );
+    editorCropRectController = ZoomableEditorCropRectController(
         editorGlobalKey,
         widget.contentSize,
         widget.editorSize,
@@ -227,7 +218,8 @@ class _ZoomableEditorState extends State<ZoomableEditor> {
     );
 
 
-   final canvasWidgetWithGesture =  GestureDetector(
+
+    final canvasWidgetWithGesture =  GestureDetector(
           onScaleStart: _onScaleStart,
           onScaleUpdate: _onScaleUpdate,
           onScaleEnd: _onScaleEnd,

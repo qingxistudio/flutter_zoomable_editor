@@ -71,8 +71,10 @@ class ZoomableEditorCropRectController extends ValueNotifier<ZoomableEditorCropR
         );
         if (center != fromInsets) {
           value = ZoomableEditorCropRectState(center, fromInsets: fromInsets);
+          return;
         }
       }
+      notifyListeners();
     }
   }
 }
