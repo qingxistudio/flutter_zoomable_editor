@@ -44,7 +44,7 @@ class _ZoomableEditorCanvasState extends State<_ZoomableEditorCanvas> {
           padding: insets,
           child: Container(
               foregroundDecoration: BoxDecoration(
-              border: Border.all(width: 2, color: Colors.white),
+              border: Border.all(width: kCropRectBorderWidth, color: Colors.white),
               ),
               child: _ZoomableContentBuilder(
                 widget.contentChild,

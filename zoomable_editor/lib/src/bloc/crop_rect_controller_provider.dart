@@ -7,6 +7,8 @@ class ZoomableEditorCropRectState {
   final EdgeInsets fromInsets;
 }
 
+const double kCropRectBorderWidth = 2.0;
+
 class ZoomableEditorCropRectController extends ValueNotifier<ZoomableEditorCropRectState>  {
 
   ZoomableEditorCropRectController(

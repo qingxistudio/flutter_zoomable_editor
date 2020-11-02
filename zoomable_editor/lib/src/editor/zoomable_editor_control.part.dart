@@ -31,8 +31,8 @@ class _ZoomableEditorCropControlState extends State<_ZoomableEditorCropControl> 
     final cropRect = _controller.displayRect;
     final rectWithControlBarInsets = Rect.fromCenter(
         center: cropRect.center,
-        width: cropRect.width+CutControl.extraInsets.horizontal,
-        height: cropRect.height+CutControl.extraInsets.vertical
+        width: cropRect.width+CutControl.extraInsets.horizontal-kCropRectBorderWidth,
+        height: cropRect.height+CutControl.extraInsets.vertical-kCropRectBorderWidth
     );
     return Positioned.fromRect(rect: rectWithControlBarInsets, child: CutControl(rectWithControlBarInsets.size),);
   }

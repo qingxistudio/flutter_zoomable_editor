@@ -237,7 +237,7 @@ class _ZoomableEditorState extends State<ZoomableEditor> {
    stackChildren.add(Positioned.fill(child: canvasWidgetWithGesture,));
    if (widget.resizeEnabled) {
      const resizeControlWidget = _ZoomableEditorCropControl();
-     stackChildren.add(const Positioned.fill(child: resizeControlWidget,));
+     stackChildren.add(resizeControlWidget);
    }
     return _ZoomableEditorBlocBuilder(
         widget.zoomableController,
