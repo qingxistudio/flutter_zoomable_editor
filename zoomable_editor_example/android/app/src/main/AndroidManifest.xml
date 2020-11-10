@@ -1,5 +1,5 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.mengtnt.zoomable_editor_example">
+    package="com.qingxistudio.zoomable_editor_example">
    <application
         android:label="zoomable_editor_example"
         android:icon="@mipmap/ic_launcher">

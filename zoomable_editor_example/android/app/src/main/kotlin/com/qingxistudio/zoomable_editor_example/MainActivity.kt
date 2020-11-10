@@ -1,4 +1,4 @@
-package com.mengtnt.zoomable_editor_example
+package com.qingxistudio.zoomable_editor_example
 
 import io.flutter.embedding.android.FlutterActivity
 
